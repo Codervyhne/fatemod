@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  builder:
+    build: .
+    volumes:
+      - .:/project
+    working_dir: /project
+    environment:
+      - THEOS=/theos
+    command: bash -c "make clean 2>/dev/null || true && make package FINALPACKAGE=1"

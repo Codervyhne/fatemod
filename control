@@ -1,0 +1,9 @@
+Package: com.fatemod.fate
+Name: Fate Mod
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: AnimalCompany mods wow
+Maintainer: Fate
+Author: Fate
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 14.0)

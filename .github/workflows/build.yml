@@ -1,0 +1,42 @@
+name: Build iOS Tweak
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Theos
+      run: |
+        git clone --quiet --recursive https://github.com/theos/theos.git $HOME/theos
+      env:
+        THEOS: ${{ runner.temp }}/theos
+    
+    - name: Build FateMod
+      run: |
+        export THEOS=$HOME/theos
+        make package FINALPACKAGE=1
+      env:
+        THEOS: ${{ runner.temp }}/theos
+    
+    - name: Upload .deb artifact
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: FateMod.deb
+        path: packages/*.deb
+        retention-days: 30
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: packages/*.deb
