@@ -335,7 +335,7 @@ extern void* _spawnItemMethod;
     
     // Title label with premium styling
     UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 12, width - 110, 36)];
-    titleLabel.text = @"✨ FATE MOD";
+    titleLabel.text = @">> FATE MOD";
     titleLabel.textColor = [UIColor colorWithRed:0.4 green:0.7 blue:1.0 alpha:1.0];
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.font = [UIFont systemFontOfSize:26 weight:UIFontWeightHeavy];
@@ -924,15 +924,7 @@ extern void* _spawnItemMethod;
     [self.contentView addSubview:aboutSection];
     
     UILabel *aboutText = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, width - 30, 140)];
-    aboutText.text = @"Fate Mod v1.0
-
-Premium mod menu for Animal Company.
-
-Features:
-✨ Item Spawner
-💰 Money Cheats
-⚡ Combat Cheats
-🛒 Shop Hacks";
+    aboutText.text = @"Fate Mod v1.0\n\nPremium mod menu for Animal Company.\n\nFeatures:\n* Item Spawner\n* Money Cheats\n* Combat Cheats\n* Shop Hacks";
     aboutText.textColor = [UIColor colorWithWhite:0.85 alpha:1.0];
     aboutText.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
     aboutText.numberOfLines = 0;
@@ -947,14 +939,14 @@ Features:
     [self.contentView addSubview:featuresSection];
     
     NSArray *features = @[
-        @"📦 Spawn 313+ Items",
-        @"🎯 Custom Spawn Locations",
-        @"💵 Add Unlimited Money",
-        @"∞ Infinite Ammo",
-        @"🛍️ Remove Shop Cooldown",
-        @"🔍 Search Items",
-        @"💾 Settings Persistence",
-        @"🎨 Premium UI Design"
+        @"[+] Spawn 313+ Items",
+        @"[+] Custom Spawn Locations",
+        @"[+] Add Unlimited Money",
+        @"[+] Infinite Ammo",
+        @"[+] Remove Shop Cooldown",
+        @"[+] Search Items",
+        @"[+] Settings Persistence",
+        @"[+] Premium UI Design"
     ];
     
     for (int i = 0; i < features.count; i++) {
@@ -974,9 +966,7 @@ Features:
     [self.contentView addSubview:reqSection];
     
     UILabel *reqText = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, width - 30, 90)];
-    reqText.text = @"✓ Jailbroken iOS 12+
-✓ Animal Company Game
-✓ IL2CPP Runtime";
+    reqText.text = @"[OK] Jailbroken iOS 12+\n[OK] Animal Company Game\n[OK] IL2CPP Runtime";
     reqText.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
     reqText.font = [UIFont systemFontOfSize:12 weight:UIFontWeightRegular];
     reqText.numberOfLines = 0;
