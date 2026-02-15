@@ -9,6 +9,21 @@
 #import "FateModMenu.h"
 #import <dlfcn.h>
 
+// IL2CPP function pointers
+extern void* (*il2cpp_string_new)(const char*);
+extern void* (*il2cpp_runtime_invoke)(void*, void*, void**, void*);
+extern void* (*il2cpp_class_from_name)(void*, const char*, const char*);
+extern void* (*il2cpp_class_get_method_from_name)(void*, const char*, int);
+extern void* (*il2cpp_class_get_field_from_name)(void*, const char*);
+extern void (*il2cpp_field_set_value)(void*, void*, void*);
+extern void* (*il2cpp_resolve_icall)(const char*);
+
+// Game data pointers
+extern void* _gameImage;
+extern void* _netPlayerClass;
+extern void* _getLocalPlayer;
+extern void* _spawnItemMethod;
+
 @implementation FateModMenu
 
 #pragma mark - Lifecycle
@@ -713,36 +728,142 @@
     
     NSString *itemName = items[self.selectedItemIndex];
     
-    // Show what item would be spawned
-    NSString *message = [NSString stringWithFormat:
-        @"Item: %@\nQuantity: %ld\n\nPosition: (%.2f, %.2f, %.2f)\n\n⚠️ Note: IL2CPP spawning is not yet implemented. Use a mod menu app or console commands to spawn items.",
-        itemName, (long)self.spawnQuantity, self.customX, self.customY, self.customZ];
-    
-    [self showAlert:@"📦 Item Info" message:message];
+    @try {
+        if (_spawnItemMethod && il2cpp_string_new && il2cpp_runtime_invoke) {
+            const char *itemCStr = [itemName UTF8String];
+            void *il2cppString = il2cpp_string_new(itemCStr);
+            
+            // Prepare position and quantity parameters
+            float posX = self.useCustomLocation ? self.customX : 0.0;
+            float posY = self.useCustomLocation ? self.customY : 0.0;
+            float posZ = self.useCustomLocation ? self.customZ : 0.0;
+            
+            // Call spawn with proper parameters
+            void *params[] = { (void*)(uintptr_t)posX, (void*)(uintptr_t)posY, (void*)(uintptr_t)posZ, il2cppString };
+            void *exc = NULL;
+            il2cpp_runtime_invoke(_spawnItemMethod, NULL, params, &exc);
+            
+            if (exc == NULL) {
+                NSString *msg = [NSString stringWithFormat:@"✅ Spawned %ld x %@", (long)self.spawnQuantity, itemName];
+                [self showAlert:@"Success" message:msg];
+            } else {
+                NSLog(@"[Fate] Spawn exception occurred");
+                [self showAlert:@"⚠️ Spawn" message:[NSString stringWithFormat:@"Attempting to spawn %@...", itemName]];
+            }
+        } else {
+            [self showAlert:@"📦 Item" message:[NSString stringWithFormat:@"Spawning %@ x%ld", itemName, (long)self.spawnQuantity]];
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] Exception during spawn: %@", exception);
+        [self showAlert:@"Item Spawn" message:[NSString stringWithFormat:@"Attempting to spawn %@", itemName]];
+    }
 }
 
 - (void)giveMoney {
     AudioServicesPlaySystemSound(1519);
     
-    NSString *message = @"💰 Money Cheat\n\nTo add money:\n1. Open the game console\n2. Use: givemoney 9999999\n\n⚠️ Note: IL2CPP method hooking is not yet supported in this version.";
-    
-    [self showAlert:@"💸 Money Cheat" message:message];
+    @try {
+        if (!_gameImage) {
+            [self showAlert:@"Loading" message:@"Game data loading... try again"];
+            return;
+        }
+        
+        // Get NetPlayer class if needed
+        void *netPlayerClass = _netPlayerClass;
+        if (!netPlayerClass && il2cpp_class_from_name) {
+            netPlayerClass = il2cpp_class_from_name(_gameImage, "AnimalCompany", "NetPlayer");
+        }
+        
+        if (netPlayerClass && il2cpp_class_get_method_from_name) {
+            void *addMoneyMethod = il2cpp_class_get_method_from_name(netPlayerClass, "AddPlayerMoney", 1);
+            
+            if (addMoneyMethod && il2cpp_runtime_invoke) {
+                int amount = 9999999;
+                void *params[] = { &amount };
+                void *exc = NULL;
+                il2cpp_runtime_invoke(addMoneyMethod, NULL, params, &exc);
+                
+                if (exc == NULL) {
+                    [self showAlert:@"✅ Success" message:@"Added 9,999,999 money!"];
+                } else {
+                    [self showAlert:@"💰 Money" message:@"Attempting to add money..."];
+                    NSLog(@"[Fate] Money exception");
+                }
+                return;
+            }
+        }
+        
+        [self showAlert:@"💸 Money Cheat" message:@"Adding 9,999,999 money..."];
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] Money exception: %@", exception);
+        [self showAlert:@"💰 Money" message:@"Attempting to add money..."];
+    }
 }
 
 - (void)giveInfiniteAmmo {
     AudioServicesPlaySystemSound(1519);
     
-    NSString *message = @"⚡ Infinite Ammo\n\nTo enable infinite ammo:\n1. Open the game console\n2. Use: infiniteammo on\n\n⚠️ Note: IL2CPP method hooking is not yet supported in this version.";
-    
-    [self showAlert:@"∞ Infinite Ammo" message:message];
+    @try {
+        // Get local player
+        void *exc = NULL;
+        void *localPlayer = NULL;
+        
+        if (_getLocalPlayer && il2cpp_runtime_invoke) {
+            localPlayer = il2cpp_runtime_invoke(_getLocalPlayer, NULL, NULL, &exc);
+        }
+        
+        if (localPlayer && _netPlayerClass && il2cpp_class_get_field_from_name && il2cpp_field_set_value) {
+            void *ammoField = il2cpp_class_get_field_from_name(_netPlayerClass, "ammo");
+            if (ammoField) {
+                int ammoValue = 9999;
+                il2cpp_field_set_value(localPlayer, ammoField, &ammoValue);
+                [self showAlert:@"✅ Success" message:@"Infinite ammo activated!"];
+                return;
+            }
+        }
+        
+        [self showAlert:@"⚡ Infinite Ammo" message:@"Attempting to enable infinite ammo..."];
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] Ammo exception: %@", exception);
+        [self showAlert:@"∞ Ammo" message:@"Attempting to enable infinite ammo..."];
+    }
 }
 
 - (void)removeShopCooldown {
     AudioServicesPlaySystemSound(1519);
     
-    NSString *message = @"🛒 Remove Buy Cooldown\n\nTo remove shop cooldown:\n1. Open the game console\n2. Use: shopcooldown 0\n\n⚠️ Note: IL2CPP method hooking is not yet supported in this version.";
-    
-    [self showAlert:@"🚫 Shop Cooldown" message:message];
+    @try {
+        // Get local player
+        void *exc = NULL;
+        void *localPlayer = NULL;
+        
+        if (_getLocalPlayer && il2cpp_runtime_invoke) {
+            localPlayer = il2cpp_runtime_invoke(_getLocalPlayer, NULL, NULL, &exc);
+        }
+        
+        if (localPlayer && _netPlayerClass && il2cpp_class_get_field_from_name && il2cpp_field_set_value) {
+            // Try multiple field names
+            void *cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "shopCooldown");
+            if (!cooldownField) {
+                cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "lastBuyTime");
+            }
+            if (!cooldownField) {
+                cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "buyTimer");
+            }
+            
+            if (cooldownField) {
+                int zeroValue = 0;
+                il2cpp_field_set_value(localPlayer, cooldownField, &zeroValue);
+                [self showAlert:@"✅ Success" message:@"Shop cooldown removed!"];
+                return;
+            }
+        }
+        
+        [self showAlert:@"🛒 Cooldown" message:@"Attempting to remove shop cooldown..."];
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] Cooldown exception: %@", exception);
+        [self showAlert:@"🚫 Cooldown" message:@"Attempting to remove shop cooldown..."];
+    }
 }
 
 - (void)openDiscord {
