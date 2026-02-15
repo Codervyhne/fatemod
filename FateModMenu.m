@@ -1094,5 +1094,3 @@ Features:
 }
 
 @end
-// Temporary placeholder - will be replaced
-
