@@ -15,9 +15,9 @@ static FateModMenu *menuController = nil;
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     %orig;
     
-    // Create menu button immediately, don't wait
+    // Create menu button immediately
     if (!menuButton) {
-        [self performSelector:@selector(createFateMenuButton) withObject:nil afterDelay:0.5];
+        [self performSelector:@selector(createFateMenuButton) withObject:nil afterDelay:0.1];
     }
 }
 
@@ -42,9 +42,21 @@ static FateModMenu *menuController = nil;
             }
         }
         
+        // Get screen dimensions for proper positioning
+        CGRect screenBounds = [[UIScreen mainScreen] bounds];
+        CGFloat screenWidth = screenBounds.size.width;
+        CGFloat buttonWidth = 70;
+        CGFloat buttonHeight = 50;
+        CGFloat topMargin = 50; // Account for status bar
+        CGFloat rightMargin = 10;
+        
+        // Position in top right
+        CGFloat xPos = screenWidth - buttonWidth - rightMargin;
+        CGFloat yPos = topMargin;
+        
         // Create menu button
         menuButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        menuButton.frame = CGRectMake(20, 100, 70, 50);
+        menuButton.frame = CGRectMake(xPos, yPos, buttonWidth, buttonHeight);
         [menuButton setTitle:@"⚡\nFATE" forState:UIControlStateNormal];
         [menuButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         menuButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
@@ -79,7 +91,7 @@ static FateModMenu *menuController = nil;
         [keyWindow addSubview:menuButton];
         [keyWindow bringSubviewToFront:menuButton];
         
-        NSLog(@"[Fate] ✅ Menu button created successfully and visible");
+        NSLog(@"[Fate] ✅ Menu button created at position (%.0f, %.0f) - TOP RIGHT - CLICKABLE", xPos, yPos);
     } @catch (NSException *exception) {
         NSLog(@"[Fate] ❌ Exception creating menu button: %@", exception);
     }
@@ -94,19 +106,21 @@ static FateModMenu *menuController = nil;
     [gesture setTranslation:CGPointZero inView:view.superview];
     
     if (gesture.state == UIGestureRecognizerStateEnded) {
-        // Snap to edges
+        // Snap to edges or corners
         CGRect screenBounds = [UIScreen mainScreen].bounds;
         CGFloat centerX = view.center.x;
         CGFloat centerY = view.center.y;
+        CGFloat viewWidth = view.bounds.size.width;
+        CGFloat viewHeight = view.bounds.size.height;
         
-        // Constrain to screen bounds
-        if (centerX < view.bounds.size.width / 2) centerX = view.bounds.size.width / 2 + 10;
-        if (centerX > screenBounds.size.width - view.bounds.size.width / 2) {
-            centerX = screenBounds.size.width - view.bounds.size.width / 2 - 10;
+        // Constrain to screen bounds with margins
+        if (centerX < viewWidth / 2 + 5) centerX = viewWidth / 2 + 5;
+        if (centerX > screenBounds.size.width - viewWidth / 2 - 5) {
+            centerX = screenBounds.size.width - viewWidth / 2 - 5;
         }
-        if (centerY < view.bounds.size.height / 2) centerY = view.bounds.size.height / 2 + 50;
-        if (centerY > screenBounds.size.height - view.bounds.size.height / 2) {
-            centerY = screenBounds.size.height - view.bounds.size.height / 2 - 10;
+        if (centerY < viewHeight / 2 + 30) centerY = viewHeight / 2 + 30;
+        if (centerY > screenBounds.size.height - viewHeight / 2 - 10) {
+            centerY = screenBounds.size.height - viewHeight / 2 - 10;
         }
         
         [UIView animateWithDuration:0.3 animations:^{
@@ -144,6 +158,22 @@ static FateModMenu *menuController = nil;
         }
     } @catch (NSException *exception) {
         NSLog(@"[Fate] ❌ Exception opening menu: %@", exception);
+    }
+}
+
+%end
+
+%hook UIViewController
+
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    
+    // Also try creating button here as a fallback to ensure it appears
+    static BOOL initialized = NO;
+    if (!initialized && !menuButton) {
+        UIApplication *app = [UIApplication sharedApplication];
+        [app performSelector:@selector(createFateMenuButton)];
+        initialized = YES;
     }
 }
 
