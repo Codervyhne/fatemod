@@ -284,84 +284,108 @@ extern void* _spawnItemMethod;
 
 - (void)setupUI {
     CGRect bounds = self.view.bounds;
-    CGFloat width = MIN(bounds.size.width * 0.9, 400);
-    CGFloat height = MIN(bounds.size.height * 0.8, 650);
+    CGFloat width = MIN(bounds.size.width * 0.92, 420);
+    CGFloat height = MIN(bounds.size.height * 0.85, 700);
     
-    // Container with modern styling
+    // Container with premium styling
     self.containerView = [[UIView alloc] initWithFrame:CGRectMake(
         (bounds.size.width - width) / 2,
         (bounds.size.height - height) / 2,
         width, height
     )];
-    self.containerView.backgroundColor = [UIColor colorWithRed:0.08 green:0.09 blue:0.11 alpha:1.0];
-    self.containerView.layer.cornerRadius = 20;
+    self.containerView.backgroundColor = [UIColor colorWithRed:0.06 green:0.07 blue:0.08 alpha:0.98];
+    self.containerView.layer.cornerRadius = 24;
     self.containerView.layer.masksToBounds = NO;
     
-    // Modern gradient overlay
+    // Premium gradient background
     self.gradientLayer = [CAGradientLayer layer];
     self.gradientLayer.frame = self.containerView.bounds;
     self.gradientLayer.colors = @[
-        (id)[UIColor colorWithRed:0.15 green:0.18 blue:0.25 alpha:1.0].CGColor,
-        (id)[UIColor colorWithRed:0.10 green:0.12 blue:0.18 alpha:1.0].CGColor
+        (id)[UIColor colorWithRed:0.12 green:0.15 blue:0.22 alpha:1.0].CGColor,
+        (id)[UIColor colorWithRed:0.08 green:0.09 blue:0.14 alpha:1.0].CGColor,
+        (id)[UIColor colorWithRed:0.10 green:0.11 blue:0.16 alpha:1.0].CGColor
     ];
-    self.gradientLayer.startPoint = CGPointMake(0, 0);
-    self.gradientLayer.endPoint = CGPointMake(1, 1);
-    self.gradientLayer.cornerRadius = 20;
+    self.gradientLayer.locations = @[@0, @0.5, @1.0];
+    self.gradientLayer.startPoint = CGPointMake(0.5, 0);
+    self.gradientLayer.endPoint = CGPointMake(0.5, 1);
+    self.gradientLayer.cornerRadius = 24;
     [self.containerView.layer insertSublayer:self.gradientLayer atIndex:0];
     
-    // Border with glow effect
-    self.containerView.layer.borderWidth = 2;
-    self.containerView.layer.borderColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:0.5].CGColor;
-    self.containerView.layer.shadowColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0].CGColor;
-    self.containerView.layer.shadowRadius = 15;
-    self.containerView.layer.shadowOpacity = 0.5;
-    self.containerView.layer.shadowOffset = CGSizeMake(0, 0);
+    // Premium border with glow
+    self.containerView.layer.borderWidth = 1.5;
+    self.containerView.layer.borderColor = [UIColor colorWithRed:0.3 green:0.5 blue:0.9 alpha:0.6].CGColor;
+    self.containerView.layer.shadowColor = [UIColor colorWithRed:0.2 green:0.4 blue:0.8 alpha:0.8].CGColor;
+    self.containerView.layer.shadowRadius = 20;
+    self.containerView.layer.shadowOpacity = 0.6;
+    self.containerView.layer.shadowOffset = CGSizeMake(0, 8);
     
     [self.view addSubview:self.containerView];
     
-    // Title label with icon
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 15, width - 100, 40)];
-    titleLabel.text = @"⚡ FATE";
-    titleLabel.textColor = [UIColor colorWithRed:0.5 green:0.8 blue:1.0 alpha:1.0];
+    // Premium header with gradient
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 60)];
+    headerView.backgroundColor = [UIColor clearColor];
+    CAGradientLayer *headerGradient = [CAGradientLayer layer];
+    headerGradient.frame = headerView.bounds;
+    headerGradient.colors = @[
+        (id)[UIColor colorWithRed:0.15 green:0.25 blue:0.45 alpha:0.3].CGColor,
+        (id)[UIColor colorWithRed:0.1 green:0.15 blue:0.25 alpha:0.1].CGColor
+    ];
+    [headerView.layer insertSublayer:headerGradient atIndex:0];
+    [self.containerView addSubview:headerView];
+    
+    // Title label with premium styling
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 12, width - 110, 36)];
+    titleLabel.text = @"✨ FATE MOD";
+    titleLabel.textColor = [UIColor colorWithRed:0.4 green:0.7 blue:1.0 alpha:1.0];
     titleLabel.textAlignment = NSTextAlignmentCenter;
-    titleLabel.font = [UIFont systemFontOfSize:28 weight:UIFontWeightHeavy];
+    titleLabel.font = [UIFont systemFontOfSize:26 weight:UIFontWeightHeavy];
+    titleLabel.shadowColor = [UIColor colorWithRed:0.3 green:0.5 blue:0.9 alpha:0.5];
+    titleLabel.shadowOffset = CGSizeMake(0, 2);
     [self.containerView addSubview:titleLabel];
     
-    // Close button with modern style
+    // Close button with premium style
     UIButton *closeBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-    closeBtn.frame = CGRectMake(width - 48, 20, 36, 36);
-    [closeBtn setTitle:@"✕" forState:UIControlStateNormal];
-    closeBtn.titleLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightMedium];
+    closeBtn.frame = CGRectMake(width - 52, 16, 40, 40);
+    [closeBtn setTitle:@"×" forState:UIControlStateNormal];
+    closeBtn.titleLabel.font = [UIFont systemFontOfSize:28 weight:UIFontWeightLight];
     closeBtn.tintColor = [UIColor whiteColor];
-    closeBtn.backgroundColor = [UIColor colorWithRed:0.8 green:0.2 blue:0.3 alpha:0.8];
-    closeBtn.layer.cornerRadius = 18;
-    [closeBtn addTarget:self action:@selector(closeMenu) forControlEvents:UIControlEventTouchUpInside];
+    closeBtn.backgroundColor = [UIColor colorWithRed:0.7 green:0.2 blue:0.25 alpha:0.7];
+    closeBtn.layer.cornerRadius = 20;
+    
+    // Add hover effect
+    [closeBtn addTarget:self action:@selector(closeMenuAnimated) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:closeBtn];
     
-    // Tab control with modern styling
-    self.tabControl = [[UISegmentedControl alloc] initWithItems:@[@"📦 Items", @"⚙️ Settings"]];
-    self.tabControl.frame = CGRectMake(15, 65, width - 30, 36);
+    // Tab control with premium styling
+    self.tabControl = [[UISegmentedControl alloc] initWithItems:@[@"📦 Items", @"⚙️ Settings", @"ℹ️ Info"]];
+    self.tabControl.frame = CGRectMake(12, 68, width - 24, 38);
     self.tabControl.selectedSegmentIndex = self.currentTab;
-    self.tabControl.backgroundColor = [UIColor colorWithRed:0.12 green:0.14 blue:0.18 alpha:1.0];
-    self.tabControl.selectedSegmentTintColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0];
+    self.tabControl.backgroundColor = [UIColor colorWithRed:0.08 green:0.10 blue:0.14 alpha:0.9];
+    self.tabControl.selectedSegmentTintColor = [UIColor colorWithRed:0.3 green:0.5 blue:0.95 alpha:1.0];
     
-    NSDictionary *normalAttrs = @{NSForegroundColorAttributeName: [UIColor colorWithWhite:0.7 alpha:1.0]};
-    NSDictionary *selectedAttrs = @{NSForegroundColorAttributeName: [UIColor whiteColor]};
+    NSDictionary *normalAttrs = @{
+        NSForegroundColorAttributeName: [UIColor colorWithWhite:0.6 alpha:1.0],
+        NSFontAttributeName: [UIFont systemFontOfSize:13 weight:UIFontWeightMedium]
+    };
+    NSDictionary *selectedAttrs = @{
+        NSForegroundColorAttributeName: [UIColor whiteColor],
+        NSFontAttributeName: [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold]
+    };
     [self.tabControl setTitleTextAttributes:normalAttrs forState:UIControlStateNormal];
     [self.tabControl setTitleTextAttributes:selectedAttrs forState:UIControlStateSelected];
     
     [self.tabControl addTarget:self action:@selector(tabChanged:) forControlEvents:UIControlEventValueChanged];
     [self.containerView addSubview:self.tabControl];
     
-    // Content scroll view
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(10, 115, width - 20, height - 125)];
-    self.contentScrollView.backgroundColor = [UIColor colorWithRed:0.09 green:0.10 blue:0.13 alpha:0.8];
-    self.contentScrollView.layer.cornerRadius = 12;
+    // Content scroll view with premium styling
+    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(8, 115, width - 16, height - 130)];
+    self.contentScrollView.backgroundColor = [UIColor clearColor];
     self.contentScrollView.showsVerticalScrollIndicator = YES;
     self.contentScrollView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
+    self.contentScrollView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, -4);
     [self.containerView addSubview:self.contentScrollView];
     
-    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width - 20, 800)];
+    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width - 16, 1000)];
     self.contentView.backgroundColor = [UIColor clearColor];
     [self.contentScrollView addSubview:self.contentView];
     
@@ -371,21 +395,24 @@ extern void* _spawnItemMethod;
 - (void)updateLayoutForOrientation {
     CGRect bounds = self.view.bounds;
     CGFloat width = bounds.size.width > bounds.size.height ? 
-                    MIN(bounds.size.width * 0.7, 600) : 
-                    MIN(bounds.size.width * 0.9, 380);
+                    MIN(bounds.size.width * 0.65, 580) : 
+                    MIN(bounds.size.width * 0.92, 420);
     CGFloat height = bounds.size.width > bounds.size.height ?
-                     MIN(bounds.size.height * 0.85, 480) :
-                     MIN(bounds.size.height * 0.7, 580);
+                     MIN(bounds.size.height * 0.9, 600) :
+                     MIN(bounds.size.height * 0.85, 700);
     
-    self.containerView.frame = CGRectMake(
+    CGRect newFrame = CGRectMake(
         (bounds.size.width - width) / 2,
         (bounds.size.height - height) / 2,
         width, height
     );
     
-    if (self.gradientLayer) {
-        self.gradientLayer.frame = self.containerView.bounds;
-    }
+    [UIView animateWithDuration:0.3 animations:^{
+        self.containerView.frame = newFrame;
+        if (self.gradientLayer) {
+            self.gradientLayer.frame = self.containerView.bounds;
+        }
+    }];
     
     [self loadCurrentTab];
 }
@@ -405,8 +432,10 @@ extern void* _spawnItemMethod;
     
     if (self.currentTab == 0) {
         [self loadItemsTab];
-    } else {
+    } else if (self.currentTab == 1) {
         [self loadSettingsTab];
+    } else {
+        [self loadInfoTab];
     }
 }
 
@@ -873,6 +902,99 @@ extern void* _spawnItemMethod;
     }
 }
 
+- (void)closeMenuAnimated {
+    [UIView animateWithDuration:0.3 animations:^{
+        self.containerView.alpha = 0.5;
+        self.containerView.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0.9, 0.9);
+    } completion:^(BOOL finished) {
+        [self closeMenu];
+    }];
+}
+
+#pragma mark - Info Tab
+
+- (void)loadInfoTab {
+    CGFloat width = self.contentView.bounds.size.width - 24;
+    CGFloat yPos = 15;
+    
+    // About section
+    UIView *aboutSection = [self createSectionWithTitle:@"About Fate"
+                                                  frame:CGRectMake(12, yPos, width, 180)
+                                                  color:[UIColor colorWithRed:0.12 green:0.18 blue:0.25 alpha:1.0]];
+    [self.contentView addSubview:aboutSection];
+    
+    UILabel *aboutText = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, width - 30, 140)];
+    aboutText.text = @"Fate Mod v1.0
+
+Premium mod menu for Animal Company.
+
+Features:
+✨ Item Spawner
+💰 Money Cheats
+⚡ Combat Cheats
+🛒 Shop Hacks";
+    aboutText.textColor = [UIColor colorWithWhite:0.85 alpha:1.0];
+    aboutText.font = [UIFont systemFontOfSize:13 weight:UIFontWeightRegular];
+    aboutText.numberOfLines = 0;
+    [aboutSection addSubview:aboutText];
+    
+    yPos += 200;
+    
+    // Features section
+    UIView *featuresSection = [self createSectionWithTitle:@"Features"
+                                                     frame:CGRectMake(12, yPos, width, 270)
+                                                     color:[UIColor colorWithRed:0.15 green:0.20 blue:0.25 alpha:1.0]];
+    [self.contentView addSubview:featuresSection];
+    
+    NSArray *features = @[
+        @"📦 Spawn 313+ Items",
+        @"🎯 Custom Spawn Locations",
+        @"💵 Add Unlimited Money",
+        @"∞ Infinite Ammo",
+        @"🛍️ Remove Shop Cooldown",
+        @"🔍 Search Items",
+        @"💾 Settings Persistence",
+        @"🎨 Premium UI Design"
+    ];
+    
+    for (int i = 0; i < features.count; i++) {
+        UILabel *featureLabel = [[UILabel alloc] initWithFrame:CGRectMake(25, 40 + (i * 28), width - 50, 25)];
+        featureLabel.text = features[i];
+        featureLabel.textColor = [UIColor colorWithRed:0.6 green:0.8 blue:1.0 alpha:1.0];
+        featureLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
+        [featuresSection addSubview:featureLabel];
+    }
+    
+    yPos += 290;
+    
+    // Requirements section
+    UIView *reqSection = [self createSectionWithTitle:@"Requirements"
+                                                frame:CGRectMake(12, yPos, width, 130)
+                                                color:[UIColor colorWithRed:0.18 green:0.15 blue:0.20 alpha:1.0]];
+    [self.contentView addSubview:reqSection];
+    
+    UILabel *reqText = [[UILabel alloc] initWithFrame:CGRectMake(15, 35, width - 30, 90)];
+    reqText.text = @"✓ Jailbroken iOS 12+
+✓ Animal Company Game
+✓ IL2CPP Runtime";
+    reqText.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+    reqText.font = [UIFont systemFontOfSize:12 weight:UIFontWeightRegular];
+    reqText.numberOfLines = 0;
+    [reqSection addSubview:reqText];
+    
+    yPos += 150;
+    
+    // Version info
+    UILabel *versionLabel = [[UILabel alloc] initWithFrame:CGRectMake(12, yPos, width, 40)];
+    versionLabel.text = @"v1.0 • Made by Fate • 2026";
+    versionLabel.textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
+    versionLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightRegular];
+    versionLabel.textAlignment = NSTextAlignmentCenter;
+    [self.contentView addSubview:versionLabel];
+    
+    self.contentScrollView.contentSize = CGSizeMake(self.contentView.bounds.size.width, yPos + 60);
+}
+
 - (void)closeMenu {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -972,3 +1094,5 @@ extern void* _spawnItemMethod;
 }
 
 @end
+// Temporary placeholder - will be replaced
+
