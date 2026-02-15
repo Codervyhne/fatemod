@@ -12,28 +12,39 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Install Theos
       run: |
-        git clone --quiet --recursive https://github.com/theos/theos.git $HOME/theos
-      env:
-        THEOS: ${{ runner.temp }}/theos
+        git clone --quiet --recursive https://github.com/theos/theos.git ~/theos
+        cd ~/theos
+        curl -sL https://github.com/theos/sdks/archive/master.zip -o sdks.zip
+        unzip -q sdks.zip
+        mv sdks-master/* sdks/ 2>/dev/null || true
+        rm -rf sdks-master sdks.zip
     
     - name: Build FateMod
       run: |
-        export THEOS=$HOME/theos
+        export THEOS=~/theos
+        export PATH="$THEOS/bin:$PATH"
         make package FINALPACKAGE=1
-      env:
-        THEOS: ${{ runner.temp }}/theos
+      working-directory: ${{ github.workspace }}
     
     - name: Upload .deb artifact
       uses: actions/upload-artifact@v4
-      if: always()
+      if: success()
       with:
-        name: FateMod.deb
+        name: FateMod-${{ github.ref_name }}
         path: packages/*.deb
         retention-days: 30
+    
+    - name: Upload build logs on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs
+        path: .theos/obj/
+        retention-days: 7
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
