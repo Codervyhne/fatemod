@@ -65,6 +65,22 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
 #pragma mark - Data Initialization
 
 - (void)initializeData {
+    // Preset location coordinates (X, Y, Z)
+    self.locationCoordinates = @{
+        @"Player Position": @[@0.0, @0.0, @0.0],          // Spawn at player
+        @"Spawn Point": @[@0.0, @3.0, @0.0],              // Default spawn
+        @"Office Main": @[@15.5, @2.0, @-8.3],            // Main office area
+        @"Factory Floor": @[@-25.0, @1.5, @12.0],         // Factory zone
+        @"Mountain Base": @[@45.0, @8.0, @-20.0],         // Mountain location
+        @"Cave Entrance": @[@-30.0, @5.0, @35.0],         // Cave area
+        @"Lake Shore": @[@50.0, @1.0, @40.0],             // Lake shore
+        @"Forest Path": @[@-15.0, @2.0, @55.0],           // Forest location
+        @"Graveyard": @[@-60.0, @3.0, @-40.0],            // Graveyard
+        @"Circus Tent": @[@20.0, @2.0, @50.0],            // Circus area
+        @"Dam Facility": @[@0.0, @-5.0, @-50.0],          // Dam facility
+        @"Underground Lab": @[@-40.0, @-10.0, @0.0]       // Underground area
+    };
+    
     // All 313 items from Animal Company
     self.availableItems = @[
         @"item_ac_cola", @"item_alphablade", @"item_anti_gravity_grenade",
@@ -557,45 +573,67 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
     
     yPos += 200;
     
-    // Custom Location Section (if enabled)
-    if (self.selectedLocationIndex == 0 && self.useCustomLocation) {
-        UIView *customSection = [self createSectionWithTitle:@"Custom Coordinates" 
-                                                       frame:CGRectMake(12, yPos, width, 240)
-                                                       color:[UIColor colorWithRed:0.15 green:0.17 blue:0.20 alpha:1.0]];
-        [self.contentView addSubview:customSection];
-        
-        // X, Y, Z coordinate fields
-        NSArray *coords = @[@"X", @"Y", @"Z"];
-        NSArray *values = @[@(self.customX), @(self.customY), @(self.customZ)];
-        
-        for (int i = 0; i < 3; i++) {
-            UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(12, 45 + (i * 55), 40, 28)];
-            label.text = coords[i];
-            label.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
-            label.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
-            [customSection addSubview:label];
-            
-            UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(60, 40 + (i * 55), width - 84, 38)];
-            field.text = [NSString stringWithFormat:@"%.2f", [values[i] floatValue]];
-            field.backgroundColor = [UIColor colorWithRed:0.18 green:0.20 blue:0.24 alpha:1.0];
-            field.textColor = [UIColor whiteColor];
-            field.layer.cornerRadius = 6;
-            field.textAlignment = NSTextAlignmentCenter;
-            field.keyboardType = UIKeyboardTypeDecimalPad;
-            field.tag = 3001 + i;
-            [field addTarget:self action:@selector(updateCustomLocation) forControlEvents:UIControlEventEditingChanged];
-            [customSection addSubview:field];
-        }
-        
-        // Reset button
-        UIButton *resetBtn = [self createButtonWithTitle:@"Reset to Default" 
-                                                   frame:CGRectMake(12, 190, width - 24, 40)
-                                                   color:[UIColor colorWithRed:0.7 green:0.3 blue:0.3 alpha:1.0]];
-        [resetBtn addTarget:self action:@selector(resetLocation) forControlEvents:UIControlEventTouchUpInside];
-        [customSection addSubview:resetBtn];
-        
-        yPos += 260;
+    // Current coordinates display section
+    UIView *coordSection = [self createSectionWithTitle:@"Current Coordinates" 
+                                                  frame:CGRectMake(12, yPos, width, 130)
+                                                  color:[UIColor colorWithRed:0.18 green:0.20 blue:0.25 alpha:1.0]];
+    [self.contentView addSubview:coordSection];
+    
+    NSArray *coordLabels = @[
+        [NSString stringWithFormat:@"X: %.2f", self.customX],
+        [NSString stringWithFormat:@"Y: %.2f", self.customY],
+        [NSString stringWithFormat:@"Z: %.2f", self.customZ]
+    ];
+    
+    for (int i = 0; i < 3; i++) {
+        UILabel *coordLabel = [[UILabel alloc] initWithFrame:CGRectMake(12, 40 + (i * 28), width - 24, 24)];
+        coordLabel.text = coordLabels[i];
+        coordLabel.textColor = [UIColor colorWithRed:0.5 green:0.8 blue:1.0 alpha:1.0];
+        coordLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
+        [coordSection addSubview:coordLabel];
     }
+    
+    yPos += 150;
+    
+    // Edit coordinates section
+    UIView *editSection = [self createSectionWithTitle:@"Edit Coordinates" 
+                                                 frame:CGRectMake(12, yPos, width, 180)
+                                                 color:[UIColor colorWithRed:0.15 green:0.17 blue:0.20 alpha:1.0]];
+    [self.contentView addSubview:editSection];
+    
+    // X, Y, Z coordinate fields
+    NSArray *coords = @[@"X", @"Y", @"Z"];
+    NSArray *values = @[@(self.customX), @(self.customY), @(self.customZ)];
+    
+    for (int i = 0; i < 3; i++) {
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(12, 45 + (i * 40), 40, 28)];
+        label.text = coords[i];
+        label.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+        label.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+        [editSection addSubview:label];
+        
+        UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(60, 40 + (i * 40), width - 84, 38)];
+        field.text = [NSString stringWithFormat:@"%.2f", [values[i] floatValue]];
+        field.backgroundColor = [UIColor colorWithRed:0.18 green:0.20 blue:0.24 alpha:1.0];
+        field.textColor = [UIColor whiteColor];
+        field.layer.cornerRadius = 6;
+        field.textAlignment = NSTextAlignmentCenter;
+        field.keyboardType = UIKeyboardTypeDecimalPad;
+        field.tag = 3001 + i;
+        [field addTarget:self action:@selector(updateCustomLocation) forControlEvents:UIControlEventEditingChanged];
+        [editSection addSubview:field];
+    }
+    
+    yPos += 160;
+    
+    // Reset button
+    UIButton *resetBtn = [self createButtonWithTitle:@"Reset to Default" 
+                                               frame:CGRectMake(12, yPos, width - 24, 40)
+                                               color:[UIColor colorWithRed:0.7 green:0.3 blue:0.3 alpha:1.0]];
+    [resetBtn addTarget:self action:@selector(resetLocation) forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView addSubview:resetBtn];
+    
+    yPos += 50;
     
     // Money Cheat Section
     UIView *moneySection = [self createSectionWithTitle:@"💰 Money Cheats" 
@@ -1027,9 +1065,21 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
 - (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
     if (pickerView.tag == 5000) {
         self.selectedLocationIndex = row;
-        self.useCustomLocation = (row == 0);
+        
+        // Get the location name and apply coordinates
+        NSString *selectedLocation = self.presetLocations[row];
+        NSArray *coords = self.locationCoordinates[selectedLocation];
+        
+        if (coords && coords.count == 3) {
+            self.customX = [coords[0] floatValue];
+            self.customY = [coords[1] floatValue];
+            self.customZ = [coords[2] floatValue];
+            self.useCustomLocation = YES;  // Enable custom location mode to use these coords
+            NSLog(@"[Fate] Set location to %@ at (%.1f, %.1f, %.1f)", selectedLocation, self.customX, self.customY, self.customZ);
+        }
+        
         [self saveSettings];
-        [self loadCurrentTab];
+        [self loadCurrentTab];  // Reload to show updated coordinates
     } else {
         NSArray *items = self.filteredItems ?: self.availableItems;
         NSString *selectedItem = items[row];

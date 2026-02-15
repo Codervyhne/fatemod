@@ -28,6 +28,7 @@
 @property (nonatomic, strong) NSArray *availableItems;
 @property (nonatomic, strong) NSArray *filteredItems;
 @property (nonatomic, strong) NSArray *presetLocations;
+@property (nonatomic, strong) NSDictionary *locationCoordinates;
 @property (nonatomic, assign) NSInteger currentTab;
 @property (nonatomic, assign) NSInteger selectedItemIndex;
 @property (nonatomic, assign) NSInteger spawnQuantity;
