@@ -1079,7 +1079,10 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
         }
         
         [self saveSettings];
-        [self loadCurrentTab];  // Reload to show updated coordinates
+        // Defer reload to avoid crashing during picker delegate execution
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self loadCurrentTab];
+        });
     } else {
         NSArray *items = self.filteredItems ?: self.availableItems;
         NSString *selectedItem = items[row];
