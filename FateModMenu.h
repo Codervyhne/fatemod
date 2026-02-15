@@ -45,7 +45,6 @@
 @property (nonatomic, assign) void *prefabGeneratorClass;
 @property (nonatomic, assign) void *gameManagerClass;
 @property (nonatomic, assign) void *spawnItemMethod;
-@property (nonatomic, assign) void *getLocalPlayerMethod;
 @property (nonatomic, assign) void *addMoneyMethod;
 @property (nonatomic, assign) void *gameImage;
 
@@ -61,6 +60,5 @@
 - (BOOL)initializeIL2CPP;
 - (BOOL)initializeGameClasses;
 - (void *)getGameImage:(const char *)imageName;
-- (void *)getLocalPlayer;
 
 @end

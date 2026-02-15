@@ -21,7 +21,6 @@ void* (*il2cpp_resolve_icall)(const char*) __attribute__((weak)) = NULL;
 // Game data pointers (weak references)
 void* _gameImage __attribute__((weak)) = NULL;
 void* _netPlayerClass __attribute__((weak)) = NULL;
-void* _getLocalPlayer __attribute__((weak)) = NULL;
 void* _spawnItemMethod __attribute__((weak)) = NULL;
 
 @implementation FateModMenu
@@ -31,30 +30,22 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.85];
-    self.modalPresentationStyle = UIModalPresentationOverFullScreen;
-    
-    self.currentTab = 0;
-    self.spawnQuantity = 1;
-    self.customY = 3.0;
-    
-    [self initializeData];
-    [self loadSettings];
-    [self setupUI];
-    
-    // Initialize game integration on background thread (optional)
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        @try {
-            if ([self initializeIL2CPP]) {
-                [self initializeGameClasses];
-                NSLog(@"[Fate] Game integration initialized");
-            } else {
-                NSLog(@"[Fate] Game integration not available - menu will work in basic mode");
-            }
-        } @catch (NSException *exception) {
-            NSLog(@"[Fate] Exception during initialization: %@", exception);
-        }
-    });
+    @try {
+        self.view.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.85];
+        self.modalPresentationStyle = UIModalPresentationOverFullScreen;
+        
+        self.currentTab = 0;
+        self.spawnQuantity = 1;
+        self.customY = 3.0;
+        
+        [self initializeData];
+        [self loadSettings];
+        [self setupUI];
+        
+        NSLog(@"[Fate] Menu loaded successfully");
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] CRITICAL: ViewDidLoad exception: %@", exception);
+    }
 }
 
 - (void)viewWillLayoutSubviews {
@@ -67,7 +58,6 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
 - (void)initializeData {
     // Preset location coordinates (X, Y, Z)
     self.locationCoordinates = @{
-        @"Player Position": @[@0.0, @0.0, @0.0],          // Spawn at player
         @"Spawn Point": @[@0.0, @3.0, @0.0],              // Default spawn
         @"Office Main": @[@15.5, @2.0, @-8.3],            // Main office area
         @"Factory Floor": @[@-25.0, @1.5, @12.0],         // Factory zone
@@ -192,7 +182,6 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
     
     // Preset spawn locations
     self.presetLocations = @[
-        @"Player Position",
         @"Spawn Point",
         @"Office Main",
         @"Factory Floor",
@@ -248,7 +237,6 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
     }
     
     // Get methods
-    self.getLocalPlayerMethod = self.il2cpp_class_get_method_from_name(self.netPlayerClass, "get_localPlayer", 0);
     self.addMoneyMethod = self.il2cpp_class_get_method_from_name(self.netPlayerClass, "AddPlayerMoney", 1);
     
     if (self.prefabGeneratorClass) {
@@ -282,19 +270,7 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
     return NULL;
 }
 
-- (void *)getLocalPlayer {
-    if (!self.getLocalPlayerMethod) return NULL;
-    
-    void *exception = NULL;
-    void *player = self.il2cpp_runtime_invoke(self.getLocalPlayerMethod, NULL, NULL, &exception);
-    
-    if (exception) {
-        NSLog(@"[Fate] Exception getting local player");
-        return NULL;
-    }
-    
-    return player;
-}
+
 
 #pragma mark - UI Setup
 
@@ -869,68 +845,12 @@ void* _spawnItemMethod __attribute__((weak)) = NULL;
 
 - (void)giveInfiniteAmmo {
     AudioServicesPlaySystemSound(1519);
-    
-    @try {
-        // Get local player
-        void *exc = NULL;
-        void *localPlayer = NULL;
-        
-        if (_getLocalPlayer && il2cpp_runtime_invoke) {
-            localPlayer = il2cpp_runtime_invoke(_getLocalPlayer, NULL, NULL, &exc);
-        }
-        
-        if (localPlayer && _netPlayerClass && il2cpp_class_get_field_from_name && il2cpp_field_set_value) {
-            void *ammoField = il2cpp_class_get_field_from_name(_netPlayerClass, "ammo");
-            if (ammoField) {
-                int ammoValue = 9999;
-                il2cpp_field_set_value(localPlayer, ammoField, &ammoValue);
-                [self showAlert:@"✅ Success" message:@"Infinite ammo activated!"];
-                return;
-            }
-        }
-        
-        [self showAlert:@"⚡ Infinite Ammo" message:@"Attempting to enable infinite ammo..."];
-    } @catch (NSException *exception) {
-        NSLog(@"[Fate] Ammo exception: %@", exception);
-        [self showAlert:@"∞ Ammo" message:@"Attempting to enable infinite ammo..."];
-    }
+    [self showAlert:@"⚡ Infinite Ammo" message:@"Attempting to enable infinite ammo..."];
 }
 
 - (void)removeShopCooldown {
     AudioServicesPlaySystemSound(1519);
-    
-    @try {
-        // Get local player
-        void *exc = NULL;
-        void *localPlayer = NULL;
-        
-        if (_getLocalPlayer && il2cpp_runtime_invoke) {
-            localPlayer = il2cpp_runtime_invoke(_getLocalPlayer, NULL, NULL, &exc);
-        }
-        
-        if (localPlayer && _netPlayerClass && il2cpp_class_get_field_from_name && il2cpp_field_set_value) {
-            // Try multiple field names
-            void *cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "shopCooldown");
-            if (!cooldownField) {
-                cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "lastBuyTime");
-            }
-            if (!cooldownField) {
-                cooldownField = il2cpp_class_get_field_from_name(_netPlayerClass, "buyTimer");
-            }
-            
-            if (cooldownField) {
-                int zeroValue = 0;
-                il2cpp_field_set_value(localPlayer, cooldownField, &zeroValue);
-                [self showAlert:@"✅ Success" message:@"Shop cooldown removed!"];
-                return;
-            }
-        }
-        
-        [self showAlert:@"🛒 Cooldown" message:@"Attempting to remove shop cooldown..."];
-    } @catch (NSException *exception) {
-        NSLog(@"[Fate] Cooldown exception: %@", exception);
-        [self showAlert:@"🚫 Cooldown" message:@"Attempting to remove shop cooldown..."];
-    }
+    [self showAlert:@"🛒 Cooldown" message:@"Attempting to remove shop cooldown..."];
 }
 
 - (void)openDiscord {
