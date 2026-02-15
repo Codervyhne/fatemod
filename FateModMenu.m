@@ -9,20 +9,20 @@
 #import "FateModMenu.h"
 #import <dlfcn.h>
 
-// IL2CPP function pointers
-extern void* (*il2cpp_string_new)(const char*);
-extern void* (*il2cpp_runtime_invoke)(void*, void*, void**, void*);
-extern void* (*il2cpp_class_from_name)(void*, const char*, const char*);
-extern void* (*il2cpp_class_get_method_from_name)(void*, const char*, int);
-extern void* (*il2cpp_class_get_field_from_name)(void*, const char*);
-extern void (*il2cpp_field_set_value)(void*, void*, void*);
-extern void* (*il2cpp_resolve_icall)(const char*);
+// IL2CPP function pointers (weak references - resolved at runtime)
+void* (*il2cpp_string_new)(const char*) __attribute__((weak)) = NULL;
+void* (*il2cpp_runtime_invoke)(void*, void*, void**, void*) __attribute__((weak)) = NULL;
+void* (*il2cpp_class_from_name)(void*, const char*, const char*) __attribute__((weak)) = NULL;
+void* (*il2cpp_class_get_method_from_name)(void*, const char*, int) __attribute__((weak)) = NULL;
+void* (*il2cpp_class_get_field_from_name)(void*, const char*) __attribute__((weak)) = NULL;
+void (*il2cpp_field_set_value)(void*, void*, void*) __attribute__((weak)) = NULL;
+void* (*il2cpp_resolve_icall)(const char*) __attribute__((weak)) = NULL;
 
-// Game data pointers
-extern void* _gameImage;
-extern void* _netPlayerClass;
-extern void* _getLocalPlayer;
-extern void* _spawnItemMethod;
+// Game data pointers (weak references)
+void* _gameImage __attribute__((weak)) = NULL;
+void* _netPlayerClass __attribute__((weak)) = NULL;
+void* _getLocalPlayer __attribute__((weak)) = NULL;
+void* _spawnItemMethod __attribute__((weak)) = NULL;
 
 @implementation FateModMenu
 
