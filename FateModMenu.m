@@ -27,10 +27,17 @@
     [self loadSettings];
     [self setupUI];
     
-    // Initialize game integration
+    // Initialize game integration on background thread (optional)
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if ([self initializeIL2CPP]) {
-            [self initializeGameClasses];
+        @try {
+            if ([self initializeIL2CPP]) {
+                [self initializeGameClasses];
+                NSLog(@"[Fate] Game integration initialized");
+            } else {
+                NSLog(@"[Fate] Game integration not available - menu will work in basic mode");
+            }
+        } @catch (NSException *exception) {
+            NSLog(@"[Fate] Exception during initialization: %@", exception);
         }
     });
 }

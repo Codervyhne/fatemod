@@ -15,56 +15,74 @@ static FateModMenu *menuController = nil;
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     %orig;
     
-    // Create menu button after a short delay
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (!menuButton) {
-            [self performSelector:@selector(createFateMenuButton)];
-        }
-    });
+    // Create menu button immediately, don't wait
+    if (!menuButton) {
+        [self performSelector:@selector(createFateMenuButton) withObject:nil afterDelay:0.5];
+    }
 }
 
 %new
 - (void)createFateMenuButton {
-    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    if (!keyWindow) {
-        NSLog(@"[Fate] No key window found");
-        return;
+    @try {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        if (!keyWindow) {
+            NSLog(@"[Fate] No key window found, trying to find window from connected scenes");
+            // Fallback: try to find any available window
+            if (@available(iOS 13.0, *)) {
+                for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
+                    if ([scene isKindOfClass:[UIWindowScene class]]) {
+                        keyWindow = scene.windows.firstObject;
+                        if (keyWindow) break;
+                    }
+                }
+            }
+            if (!keyWindow) {
+                NSLog(@"[Fate] Still no window found!");
+                return;
+            }
+        }
+        
+        // Create menu button
+        menuButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        menuButton.frame = CGRectMake(20, 100, 70, 50);
+        [menuButton setTitle:@"⚡\nFATE" forState:UIControlStateNormal];
+        [menuButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        menuButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
+        menuButton.titleLabel.numberOfLines = 2;
+        menuButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+        
+        // Modern gradient background
+        CAGradientLayer *gradient = [CAGradientLayer layer];
+        gradient.frame = menuButton.bounds;
+        gradient.colors = @[
+            (id)[UIColor colorWithRed:0.3 green:0.5 blue:1.0 alpha:0.95].CGColor,
+            (id)[UIColor colorWithRed:0.2 green:0.4 blue:0.9 alpha:0.95].CGColor
+        ];
+        gradient.cornerRadius = 12;
+        [menuButton.layer insertSublayer:gradient atIndex:0];
+        
+        // Styling
+        menuButton.layer.cornerRadius = 12;
+        menuButton.layer.borderWidth = 2;
+        menuButton.layer.borderColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0].CGColor;
+        menuButton.layer.shadowColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0].CGColor;
+        menuButton.layer.shadowRadius = 10;
+        menuButton.layer.shadowOpacity = 0.8;
+        menuButton.layer.shadowOffset = CGSizeMake(0, 0);
+        menuButton.layer.masksToBounds = NO;
+        
+        // Make it draggable
+        UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+        [menuButton addGestureRecognizer:panGesture];
+        
+        [menuButton addTarget:self action:@selector(openFateMenu) forControlEvents:UIControlEventTouchUpInside];
+        [keyWindow addSubview:menuButton];
+        [keyWindow bringSubviewToFront:menuButton];
+        
+        NSLog(@"[Fate] ✅ Menu button created successfully and visible");
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] ❌ Exception creating menu button: %@", exception);
     }
-    
-    // Create menu button
-    menuButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    menuButton.frame = CGRectMake(20, 80, 70, 40);
-    [menuButton setTitle:@"⚡ FATE" forState:UIControlStateNormal];
-    [menuButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    menuButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightBold];
-    
-    // Modern gradient background
-    CAGradientLayer *gradient = [CAGradientLayer layer];
-    gradient.frame = menuButton.bounds;
-    gradient.colors = @[
-        (id)[UIColor colorWithRed:0.3 green:0.5 blue:1.0 alpha:0.95].CGColor,
-        (id)[UIColor colorWithRed:0.2 green:0.4 blue:0.9 alpha:0.95].CGColor
-    ];
-    gradient.cornerRadius = 20;
-    [menuButton.layer insertSublayer:gradient atIndex:0];
-    
-    // Styling
-    menuButton.layer.cornerRadius = 20;
-    menuButton.layer.borderWidth = 2;
-    menuButton.layer.borderColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0].CGColor;
-    menuButton.layer.shadowColor = [UIColor colorWithRed:0.4 green:0.6 blue:1.0 alpha:1.0].CGColor;
-    menuButton.layer.shadowRadius = 10;
-    menuButton.layer.shadowOpacity = 0.6;
-    menuButton.layer.shadowOffset = CGSizeMake(0, 0);
-    
-    // Make it draggable
-    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    [menuButton addGestureRecognizer:panGesture];
-    
-    [menuButton addTarget:self action:@selector(openFateMenu) forControlEvents:UIControlEventTouchUpInside];
-    [keyWindow addSubview:menuButton];
-    
-    NSLog(@"[Fate] Menu button created successfully");
 }
 
 %new
@@ -99,16 +117,33 @@ static FateModMenu *menuController = nil;
 
 %new
 - (void)openFateMenu {
-    if (!menuController) {
-        menuController = [[FateModMenu alloc] init];
-    }
-    
-    UIViewController *rootVC = [[UIApplication sharedApplication] keyWindow].rootViewController;
-    if (rootVC) {
-        [rootVC presentViewController:menuController animated:YES completion:nil];
-        NSLog(@"[Fate] Menu opened");
-    } else {
-        NSLog(@"[Fate] No root view controller found");
+    @try {
+        if (!menuController) {
+            menuController = [[FateModMenu alloc] init];
+        }
+        
+        UIViewController *rootVC = [[UIApplication sharedApplication] keyWindow].rootViewController;
+        if (!rootVC) {
+            NSLog(@"[Fate] No root VC found, try iOS 13+ approach");
+            if (@available(iOS 13.0, *)) {
+                for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
+                    if ([scene isKindOfClass:[UIWindowScene class]]) {
+                        UIWindowScene *windowScene = (UIWindowScene *)scene;
+                        rootVC = windowScene.windows.firstObject.rootViewController;
+                        if (rootVC) break;
+                    }
+                }
+            }
+        }
+        
+        if (rootVC) {
+            [rootVC presentViewController:menuController animated:YES completion:nil];
+            NSLog(@"[Fate] ✅ Menu opened successfully");
+        } else {
+            NSLog(@"[Fate] ❌ Could not find root view controller");
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"[Fate] ❌ Exception opening menu: %@", exception);
     }
 }
 
